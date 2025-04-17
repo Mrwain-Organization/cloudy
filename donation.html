@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Cloudy with Pi Donations</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Pi Network SDK -->
+    <script type="text/javascript" src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #6b7280;
+            --background: #f7f7f7;
+            --card-bg: #fff;
+            --gradient: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: #2d2d2d;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .donation-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .donation-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .donation-header p {
+            font-size: 1.1rem;
+            color: var(--secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .donation-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .donation-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease;
+        }
+
+        .donation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .donation-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .pi-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .donation-description {
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .pi-payment-button {
+            background: #14F195;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            width: 100%;
+            justify-content: center;
+            margin-top: 16px;
+            position: relative;
+        }
+
+        .pi-payment-button:hover {
+            background: #0ED884;
+            transform: translateY(-1px);
+        }
+
+        .pi-payment-button:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .pi-payment-button .loading {
+            position: absolute;
+            right: 12px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .pi-payment-button.loading .loading {
+            display: block;
+        }
+
+        .pi-payment-button.loading span {
+            visibility: hidden;
+        }
+
+        .payment-error {
+            color: #DC2626;
+            background: #FEE2E2;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .payment-success {
+            color: #059669;
+            background: #D1FAE5;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .custom-donation {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            margin-top: 2rem;
+        }
+
+        .custom-amount-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .custom-amount-input input {
+            width: 120px;
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .custom-amount-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .donation-info {
+            background: #f5f6ff;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .donation-info h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .donation-info ul {
+            list-style: none;
+        }
+
+        .donation-info li {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .donation-info li i {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .donation-header h1 {
+                font-size: 2rem;
+            }
+
+            .donation-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="donation-header">
+            <h1>Support Cloudy with Pi</h1>
+            <p>Help us continue building the future of creator platforms by making a donation in Pi cryptocurrency.</p>
+        </div>
+
+        <div class="donation-options">
+            <div class="donation-card">
+                <h3>Small Donation</h3>
+                <div class="donation-amount">
+                    <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi" class="pi-icon">
+                    <span>10 Pi</span>
+                </div>
+                <p class="donation-description">Support our basic operations and help us maintain the platform.</p>
+                <button class="pi-payment-button" onclick="handleDonation(10)">
+                    <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi Network Logo">
+                    <span>Donate 10 Pi</span>
+                    <div class="loading"></div>
+                </button>
+                <div class="payment-error"></div>
+                <div class="payment-success"></div>
+            </div>
+
+            <div class="donation-card">
+                <h3>Medium Donation</h3>
+                <div class="donation-amount">
+                    <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi" class="pi-icon">
+                    <span>25 Pi</span>
+                </div>
+                <p class="donation-description">Help us develop new features and improve existing ones.</p>
+                <button class="pi-payment-button" onclick="handleDonation(25)">
+                    <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi Network Logo">
+                    <span>Donate 25 Pi</span>
+                    <div class="loading"></div>
+                </button>
+                <div class="payment-error"></div>
+                <div class="payment-success"></div>
+            </div>
+
+            <div class="donation-card">
+                <h3>Large Donation</h3>
+                <div class="donation-amount">
+                    <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi" class="pi-icon">
+                    <span>50 Pi</span>
+                </div>
+                <p class="donation-description">Make a significant impact on our platform's growth and development.</p>
+                <button class="pi-payment-button" onclick="handleDonation(50)">
+                    <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi Network Logo">
+                    <span>Donate 50 Pi</span>
+                    <div class="loading"></div>
+                </button>
+                <div class="payment-error"></div>
+                <div class="payment-success"></div>
+            </div>
+        </div>
+
+        <div class="custom-donation">
+            <h3>Custom Donation Amount</h3>
+            <p>Choose your own donation amount in Pi</p>
+            <div class="custom-amount-input">
+                <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi" class="pi-icon">
+                <input type="number" id="customAmount" min="1" placeholder="Enter amount">
+            </div>
+            <button class="pi-payment-button" onclick="handleCustomDonation()">
+                <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi Network Logo">
+                <span>Donate Custom Amount</span>
+                <div class="loading"></div>
+            </button>
+            <div class="payment-error"></div>
+            <div class="payment-success"></div>
+        </div>
+
+        <div class="donation-info">
+            <h2>Why Donate?</h2>
+            <ul>
+                <li><i class="fas fa-check-circle"></i> Support the development of new features</li>
+                <li><i class="fas fa-check-circle"></i> Help maintain and improve the platform</li>
+                <li><i class="fas fa-check-circle"></i> Contribute to the Pi Network ecosystem</li>
+                <li><i class="fas fa-check-circle"></i> Get early access to new features</li>
+                <li><i class="fas fa-check-circle"></i> Join our community of supporters</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Pi Network
+        const pi = new Pi({
+            version: "2.0",
+            sandbox: true // Set to false for production
+        });
+
+        // Handle predefined donation amounts
+        async function handleDonation(amount) {
+            const button = event.target.closest('.pi-payment-button');
+            const errorDiv = button.nextElementSibling;
+            const successDiv = errorDiv.nextElementSibling;
+
+            try {
+                // Show loading state
+                button.classList.add('loading');
+                button.disabled = true;
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+
+                // Create payment
+                const payment = await pi.createPayment({
+                    amount: amount,
+                    memo: `Cloudy Donation - ${amount} Pi`,
+                    metadata: {
+                        type: 'donation',
+                        amount: amount
+                    }
+                });
+
+                // Show success message
+                successDiv.textContent = `Thank you for your donation of ${amount} Pi!`;
+                successDiv.style.display = 'block';
+
+                // Update donation record in backend
+                await fetch('/api/donations/record', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        amount: amount,
+                        paymentId: payment.identifier
+                    })
+                });
+
+                // Reset button state after delay
+                setTimeout(() => {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }, 2000);
+
+            } catch (error) {
+                console.error('Donation failed:', error);
+                errorDiv.textContent = error.message || 'Donation failed. Please try again.';
+                errorDiv.style.display = 'block';
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        // Handle custom donation amount
+        async function handleCustomDonation() {
+            const amount = parseInt(document.getElementById('customAmount').value);
+            if (!amount || amount < 1) {
+                alert('Please enter a valid donation amount (minimum 1 Pi)');
+                return;
+            }
+            await handleDonation(amount);
+        }
+
+        // Check if user is authenticated
+        window.addEventListener('load', () => {
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                window.location.href = '/sign.html';
+            }
+        });
+    </script>
+</body>
+</html>

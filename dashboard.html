@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudy - Dashboard</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- API Integration -->
+    <script src="/js/api.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f7f7f7;
+            color: #2d2d2d;
+            line-height: 1.5;
+        }
+        header {
+            background: #fff;
+            padding: 16px 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .logo::before {
+            content: "☁️";
+            margin-right: 8px;
+        }
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .user-name {
+            font-weight: 500;
+            color: #1f2937;
+        }
+        .logout-button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .logout-button:hover {
+            background: #dc2626;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 32px auto;
+            padding: 0 32px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        .dashboard-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6366f1;
+        }
+        .card-content {
+            color: #6b7280;
+        }
+        .loading {
+            text-align: center;
+            padding: 48px;
+            color: #6b7280;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 16px;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">Cloudy</div>
+            <div class="user-nav">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="user-name" id="userName">Loading...</span>
+                </div>
+                <button class="logout-button" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">Welcome</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Welcome to your Cloudy dashboard. This is your personal space to manage your account and access our features.
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">Quick Stats</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+                <div class="card-content">
+                    View your activity and statistics here. We're working on bringing you more insights soon!
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Activity</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Track your recent activities and interactions. Stay tuned for more updates!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const token = window.api.getToken();
+                if (!token) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const user = await window.api.getCurrentUser();
+                if (user) {
+                    document.getElementById('userName').textContent = user.name;
+                }
+            } catch (error) {
+                console.error('Authentication error:', error);
+                window.location.href = '/login.html';
+            }
+        });
+
+        // Handle logout
+        async function handleLogout() {
+            window.api.removeToken();
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+</html>

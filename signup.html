@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - CloudyPi</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+        Pi.init({ version: "2.0", apiKey: "oosvdfsis9dh2clk6cmka8bfg8jg3gfmwncl9xcukoek7ky2mh7z8xymohvbfiff" });
+
+        async function authenticateWithPi() {
+            try {
+                const scopes = ['payments', 'username'];
+                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                
+                if (auth) {
+                    console.log('User authenticated with Pi Network:', auth);
+                    // Send auth data to your backend
+                    const response = await fetch('/api/auth/signup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            accessToken: auth.accessToken,
+                            username: auth.user.username
+                        })
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '/dashboard.html';
+                    } else {
+                        showError('Failed to sign up. Please try again.');
+                    }
+                }
+            } catch (error) {
+                console.error('Pi Network authentication error:', error);
+                showError('Authentication failed. Please try again.');
+            }
+        }
+
+        function onIncompletePaymentFound(payment) {
+            console.log('Incomplete payment found:', payment);
+            // Handle incomplete payment
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f7f7f7;
+            color: #2d2d2d;
+            line-height: 1.5;
+        }
+        header {
+            background: #fff;
+            padding: 16px 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .logo::before {
+            content: "☁️";
+            margin-right: 8px;
+        }
+        nav {
+            display: flex;
+            gap: 16px;
+        }
+        nav a {
+            color: #4b5563;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        nav a:hover {
+            color: #6366f1;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 64px auto;
+            padding: 0 32px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        p {
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+        .signup-box {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+        }
+        .error-message {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+        .success-message {
+            color: #059669;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+        .submit-button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s ease;
+        }
+        .submit-button:hover {
+            background: #4f46e5;
+        }
+        .submit-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 16px;
+            }
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">Cloudy</div>
+            <nav>
+                <a href="home.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="pricing.html">Pricing</a>
+                <a href="login.html">Log In</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Sign Up with Pi Network</h1>
+        <div id="error-message" class="error-message"></div>
+        <button onclick="authenticateWithPi()" class="pi-button">
+            Sign Up with Pi
+        </button>
+        <p class="login-link">
+            Already have an account? <a href="login.html">Log in</a>
+        </p>
+    </div>
+</body>
+</html>

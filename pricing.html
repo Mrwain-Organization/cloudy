@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudy Pricing Plans - Pi-Powered Creator Platform</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <!-- Font Awesome CDN for social icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Pi Network SDK -->
+    <script type="text/javascript" src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+        Pi.init({ version: "2.0", apiKey: "oosvdfsis9dh2clk6cmka8bfg8jg3gfmwncl9xcukoek7ky2mh7z8xymohvbfiff" });
+
+        async function makeTestPayment() {
+            try {
+                // Authenticate the user
+                const scopes = ['payments'];
+                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+
+                if (auth) {
+                    // Create payment
+                    const payment = {
+                        amount: 1, // 1 Pi for testing
+                        memo: "Test payment for CloudyPi", // memo to show to the user
+                        metadata: { orderId: "test-" + Date.now() }, // custom payment info
+                    };
+
+                    const paymentData = await Pi.createPayment(payment);
+                    console.log('Payment created:', paymentData);
+
+                    // Handle the payment
+                    if (paymentData.status === 'completed') {
+                        // Payment completed successfully
+                        alert('Payment completed successfully! Transaction ID: ' + paymentData.transaction.txid);
+                        
+                        // You should verify the payment on your backend here
+                        try {
+                            const response = await fetch('/api/payments/verify', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    paymentId: paymentData.identifier,
+                                    txid: paymentData.transaction.txid
+                                })
+                            });
+
+                            if (response.ok) {
+                                console.log('Payment verified on backend');
+                            } else {
+                                console.error('Payment verification failed');
+                            }
+                        } catch (error) {
+                            console.error('Error verifying payment:', error);
+                        }
+                    } else {
+                        alert('Payment cancelled or failed. Status: ' + paymentData.status);
+                    }
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment failed: ' + error.message);
+            }
+        }
+
+        function onIncompletePaymentFound(payment) {
+            console.log("Incomplete payment found!", payment);
+            // You can handle incomplete payments here
+            return Promise.resolve(payment);
+        }
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
+            background: #f7f7f7;
+            color: #2d2d2d;
+            line-height: 1.5;
+            font-size: clamp(14px, 1.8vw, 15px);
+            overflow-x: hidden;
+        }
+
+        /* Define CSS Variables */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #6b7280;
+            --background: #f7f7f7;
+            --card-bg: #fff;
+            --gradient: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Desktop Header */
+        header {
+            background: #fff;
+            padding: 16px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .logo::before {
+            content: "☁️";
+            margin-right: 8px;
+            font-size: 22px;
+            transition: transform 0.3s ease;
+        }
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        .logo:hover::before {
+            transform: translateY(-2px);
+        }
+        nav {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        nav a {
+            color: #4b5563;
+            text-decoration: none;
+            margin: 8px clamp(12px, 2vw, 16px) 8px 0;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        nav a:hover {
+            background: #f5f6ff;
+            color: var(--primary);
+        }
+        nav a.active {
+            background: #f5f6ff;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            display: none;
+            background: #fff;
+            padding: clamp(10px, 3vw, 12px) clamp(12px, 4vw, 16px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .mobile-header .logo {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+        }
+        .mobile-header .logo::before {
+            content: "☁️";
+            margin-right: 6px;
+            font-size: 20px;
+        }
+        .hamburger {
+            font-size: 20px;
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hamburger:hover {
+            background: #f5f6ff;
+            color: #1f2937;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-height: 100vh;
+            background: #fff;
+            padding: 60px 16px;
+            z-index: 999;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.3s, opacity 0.3s ease;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .mobile-menu.open {
+            display: block;
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .mobile-menu ul {
+            list-style: none;
+        }
+        .mobile-menu li {
+            margin: 8px 0;
+        }
+        .mobile-menu a, .mobile-menu span {
+            color: #374151;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+        .mobile-menu a:hover {
+            background: #f5f6ff;
+        }
+        .mobile-menu .icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: clamp(40px, 10vw, 80px) clamp(16px, 5vw, 32px);
+            text-align: center;
+            background: linear-gradient(to bottom, #f5f6ff, #fff);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        .hero h1 {
+            font-size: clamp(26px, 5vw, 32px);
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1f2937;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .hero p {
+            font-size: clamp(14px, 2.5vw, 16px);
+            font-weight: 400;
+            color: var(--secondary);
+            margin-bottom: 32px;
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero button {
+            background: var(--gradient);
+            color: #fff;
+            border: none;
+            padding: clamp(10px, 2vw, 12px) clamp(20px, 5vw, 28px);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 160px;
+            min-height: 44px;
+            box-shadow: var(--shadow-sm);
+        }
+        .hero button:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #4338ca);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Pricing Section */
+        .container {
+            max-width: 1280px;
+            margin: 64px auto;
+            padding: 0 clamp(16px, 5vw, 32px);
+        }
+        .container h1 {
+            font-size: clamp(26px, 5vw, 32px);
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 16px;
+            color: #1f2937;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .container h1.visible {
+            opacity: 1;
+        }
+        .container > p {
+            font-size: clamp(14px, 2.5vw, 16px);
+            font-weight: 400;
+            color: var(--secondary);
+            text-align: center;
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Billing Toggle */
+        .billing-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .billing-toggle label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+        .billing-toggle input[type="radio"] {
+            display: none;
+        }
+        .billing-toggle span {
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow-sm);
+        }
+        .billing-toggle input:checked + span {
+            background: #f5f6ff;
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .billing-toggle .save-badge {
+            background: var(--primary);
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        /* Plan Cards */
+        .plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+            gap: 24px;
+            margin-bottom: 64px;
+        }
+        .plan-card {
+            background: var(--card-bg);
+            padding: clamp(16px, 3vw, 24px);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            opacity: 0;
+            position: relative;
+            border: 1px solid #e5e7eb;
+        }
+        .plan-card.visible {
+            opacity: 1;
+        }
+        .plan-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        .plan-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2937;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            text-align: center;
+        }
+        .plan-card .price {
+            font-size: clamp(24px, 4vw, 28px);
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .plan-card .price span {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--secondary);
+        }
+        .plan-card ul {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+        .plan-card ul li {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--secondary);
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 28px;
+        }
+        .plan-card ul li i {
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-size: 16px;
+        }
+        .plan-card .cta {
+            display: block;
+            background: var(--gradient);
+            color: #fff;
+            border: none;
+            padding: clamp(10px, 2vw, 12px) clamp(20px, 5vw, 24px);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-shadow: var(--shadow-sm);
+        }
+        .plan-card .cta:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #4338ca);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .plan-card.free .cta {
+            background: #fff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        .plan-card.free .cta:hover {
+            background: #f5f6ff;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Pricing Table */
+        .pricing-table {
+            margin-bottom: 64px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .pricing-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .pricing-table table.visible {
+            opacity: 1;
+        }
+        .pricing-table th, .pricing-table td {
+            padding: clamp(12px, 2vw, 16px);
+            text-align: left;
+            font-size: 13px;
+            font-weight: 400;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .pricing-table th {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .pricing-table .plan-header th {
+            text-align: center;
+            padding: clamp(16px, 3vw, 24px);
+            vertical-align: top;
+        }
+        .pricing-table .plan-header .price {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            display: block;
+            margin: 8px 0;
+        }
+        .pricing-table .plan-header .button, .pricing-table .plan-header .contact-us {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .pricing-table .plan-header .button {
+            background: var(--gradient);
+            color: #fff;
+            border: none;
+        }
+        .pricing-table .plan-header .button:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #4338ca);
+            transform: translateY(-1px);
+        }
+        .pricing-table .plan-header .contact-us {
+            color: var(--primary);
+            background: none;
+        }
+        .pricing-table .plan-header .contact-us:hover {
+            background: #f5f6ff;
+        }
+        .pricing-table .check {
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .pricing-table tr th:first-child {
+            min-width: 200px;
+        }
+
+        /* AI Section */
+        .ai-section {
+            text-align: center;
+            margin-bottom: 64px;
+            padding: clamp(24px, 5vw, 32px);
+            background: #f5f6ff;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .ai-section.visible {
+            opacity: 1;
+        }
+        .ai-section h2 {
+            font-size: clamp(22px, 3.5vw, 26px);
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2937;
+        }
+        .ai-section p {
+            font-size: clamp(14px, 2.5vw, 16px);
+            color: var(--secondary);
+            margin-bottom: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .ai-section .ai-price {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .ai-section ul {
+            list-style: none;
+            margin-bottom: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .ai-section ul li {
+            font-size: 13px;
+            color: var(--secondary);
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 28px;
+        }
+        .ai-section ul li::before {
+            content: "✓";
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-weight: 600;
+        }
+        .ai-section .button {
+            display: inline-block;
+            background: var(--gradient);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-shadow: var(--shadow-sm);
+        }
+        .ai-section .button:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #4338ca);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            background: #f7f7f7;
+            padding: 64px clamp(16px, 5vw, 32px);
+            text-align: center;
+        }
+        .faq-section h2 {
+            font-size: clamp(22px, 3.5vw, 26px);
+            font-weight: 600;
+            margin-bottom: 32px;
+            color: #1f2937;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .faq-section h2.visible {
+            opacity: 1;
+        }
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+            gap: 24px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .faq-card {
+            background: var(--card-bg);
+            padding: clamp(16px, 3vw, 24px);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            opacity: 0;
+            text-align: left;
+        }
+        .faq-card.visible {
+            opacity: 1;
+        }
+        .faq-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        .faq-card h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1f2937;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .faq-card p {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--secondary);
+        }
+        .faq-card a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .faq-card a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            background: #fff;
+            color: var(--secondary);
+            padding: 48px clamp(16px, 5vw, 32px);
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+            gap: 32px;
+        }
+        .footer-section {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .footer-section.visible {
+            opacity: 1;
+        }
+        .footer-section h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2937;
+        }
+        .footer-section ul {
+            list-style: none;
+        }
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+        .footer-section a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            display: block;
+            padding: 6px 0;
+            border-radius: 4px;
+        }
+        .footer-section a:hover {
+            color: var(--primary);
+            background: #f5f6ff;
+        }
+
+        /* Mobile Bottom Navigation */
+        .footer-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            padding: 12px 16px;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+        .footer-mobile-nav ul {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            list-style: none;
+        }
+        .footer-mobile-nav li {
+            flex: 1;
+        }
+        .footer-mobile-nav a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 8px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        .footer-mobile-nav a:hover, .footer-mobile-nav a.active {
+            color: var(--primary);
+            background: #f5f6ff;
+        }
+        .footer-mobile-nav .icon {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        /* Subscription Form */
+        .footer-subscription {
+            max-width: 1280px;
+            margin: 32px auto 0;
+            padding: 24px;
+            background: #f7f7f7;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .footer-subscription h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        .footer-subscription form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            flex-direction: column;
+        }
+        @media (min-width: 480px) {
+            .footer-subscription form {
+                flex-direction: row;
+            }
+        }
+        .footer-subscription input[type="email"] {
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 400;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            width: min(100%, 280px);
+            outline: none;
+            transition: border-color 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        .footer-subscription input[type="email"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+        }
+        .footer-subscription button {
+            background: var(--gradient);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-shadow: var(--shadow-sm);
+        }
+        .footer-subscription button:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #4338ca);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Footer Bottom */
+        .footer-bottom {
+            max-width: 1280px;
+            margin: 32px auto 0;
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+            text-align: center;
+        }
+        .footer-bottom-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        .footer-bottom-links {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-bottom-links a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .footer-bottom-links a:hover {
+            color: var(--primary);
+            background: #f5f6ff;
+        }
+        .footer-app-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .social-icons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex: 1;
+        }
+        .social-icons a {
+            color: var(--secondary);
+            font-size: clamp(16px, 2.5vw, 18px);
+            transition: all 0.3s ease;
+            padding: 8px;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        .social-icons a:hover {
+            color: var(--primary);
+            background: #f5f6ff;
+            transform: scale(1.1);
+        }
+        .footer-powered {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header-container, .container, .faq-section {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .hero {
+                padding: clamp(40px, 8vw, 60px) clamp(16px, 4vw, 24px);
+            }
+            .hero-content {
+                padding: 24px;
+            }
+            .plans, .faq-grid {
+                grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+            }
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            header {
+                display: none;
+            }
+            .mobile-header {
+                display: flex;
+            }
+            .hero {
+                padding: clamp(40px, 8vw, 60px) clamp(16px, 4vw, 24px);
+                min-height: auto;
+            }
+            .hero-content {
+                box-shadow: none;
+                padding: 16px;
+            }
+            .container, .faq-section {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .footer-content {
+                display: none;
+            }
+            .footer-mobile-nav {
+                display: block;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .footer-bottom-left, .social-icons, .footer-powered {
+                flex: none;
+                width: 100%;
+            }
+            .pricing-table table {
+                min-width: 600px; /* Ensure table scrolls on mobile */
+            }
+        }
+        @media (max-width: 480px) {
+            .hero {
+                padding: clamp(32px, 8vw, 40px) clamp(12px, 4vw, 16px);
+            }
+            .container, .faq-section {
+                padding: 0 clamp(12px, 4vw, 16px);
+            }
+            .plans, .faq-grid {
+                grid-template-columns: 1fr;
+            }
+            .billing-toggle {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .footer-subscription form {
+                flex-direction: column;
+            }
+        }
+
+        /* Pi Payment Button Styles */
+        .pi-payment-button {
+            background: #14F195;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            width: 100%;
+            justify-content: center;
+            margin-top: 16px;
+            position: relative;
+        }
+
+        .pi-payment-button:hover {
+            background: #0ED884;
+            transform: translateY(-1px);
+        }
+
+        .pi-payment-button:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .pi-payment-button .loading {
+            position: absolute;
+            right: 12px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .pi-payment-button.loading .loading {
+            display: block;
+        }
+
+        .pi-payment-button.loading span {
+            visibility: hidden;
+        }
+
+        .payment-error {
+            color: #DC2626;
+            background: #FEE2E2;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .payment-success {
+            color: #059669;
+            background: #D1FAE5;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .plan-price {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            margin: 16px 0;
+        }
+
+        .plan-price .pi-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="logo">Cloudy</div>
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </header>
+
+    <!-- Desktop Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">Cloudy</div>
+            <nav>
+                <a href="home.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="pricing.html">Pricing</a>
+                <a href="categories.html">Categories</a>
+                <a href="top-creators.html">Top Creators</a>
+                <a href="learnmore.html">Learn More</a>
+                <a href="signup.html">Sign Up</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu">
+        <ul>
+            <li><a href="home.html"><span class="icon">🏠</span>Home</a></li>
+            <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
+            <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
+            <li><a href="categories.html"><span class="icon">📚</span>Categories</a></li>
+            <li><a href="top-creators.html"><span class="icon">🌟</span>Top Creators</a></li>
+            <li><a href="learnmore.html"><span class="icon">ℹ️</span>Learn More</a></li>
+            <li><a href="signup.html"><span class="icon">🚀</span>Sign Up</a></li>
+            <li><a href="explore-more.html"><span class="icon">🔍</span>Explore More</a></li>
+            <li><a href="workspace-tools.html"><span class="icon">🛠️</span>Workspace Tools</a></li>
+            <li><a href="sell.html"><span class="icon">🛒</span>Sell Your Work</a></li>
+            <li><a href="our-story.html"><span class="icon">📖</span>Our Story</a></li>
+            <li><a href="pi-payments.html"><span class="icon">π</span>Pi Payments</a></li>
+            <li><a href="email-subscribers.html"><span class="icon">✉️</span>Email Subscribers</a></li>
+            <li><a href="new-releases.html"><span class="icon">🆕</span>New Releases</a></li>
+            <li><a href="team.html"><span class="icon">👥</span>Team</a></li>
+            <li><a href="discover.html"><span class="icon">🔍</span>Discover</a></li>
+            <li><a href="dashboard.html"><span class="icon">📊</span>Dashboard</a></li>
+            <li><a href="profile.html"><span class="icon">👤</span>Profile</a></li>
+            <li><a href="whitepaper.html"><span class="icon">📄</span>Whitepaper</a></li>
+            <li><a href="security.html"><span class="icon">🔒</span>Security</a></li>
+            <li><a href="notice.html"><span class="icon">📢</span>Notices</a></li>
+            <li><a href="privacy.html"><span class="icon">🛡️</span>Privacy Policy</a></li>
+            <li><a href="terms.html"><span class="icon">📝</span>Terms of Service</a></li>
+            <li><a href="cookie-settings.html"><span class="icon">🍪</span>Cookie Settings</a></li>
+            <li><span class="user-info" id="user-name"><span class="icon">🙋</span>Welcome, [User]</span></li>
+            <li><a href="sign.html"><span class="icon">🚪</span>Sign Out</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Pricing Built for Creators</h1>
+            <p>Unlock the full power of Cloudy with affordable, Pi-powered plans tailored to your needs.</p>
+            <button onclick="window.location.href='signup.html'">Get Started</button>
+        </div>
+    </div>
+
+    <!-- Pricing Section -->
+    <div class="container">
+        <h1>Pricing Plans</h1>
+        <p>Choose your plan and pay with Pi, powered by Pi Network. Other currencies coming soon!</p>
+        <div class="billing-toggle">
+            <label><input type="radio" name="billing" value="monthly" checked onchange="updatePricing('monthly')"><span>Pay Monthly</span></label>
+            <label><input type="radio" name="billing" value="yearly" onchange="updatePricing('yearly')"><span>Pay Yearly <span class="save-badge">Save 20%</span></span></label>
+        </div>
+        <div class="plans">
+            <div class="plan-card free">
+                <h2>Free</h2>
+                <div class="price">0 Pi<span>/month</span></div>
+                <ul>
+                    <li><i class="fas fa-check"></i>Unlimited pages & blocks</li>
+                    <li><i class="fas fa-check"></i>5MB file uploads</li>
+                    <li><i class="fas fa-check"></i>10 guest collaborators</li>
+                    <li><i class="fas fa-check"></i>Basic Cloudy AI (5 queries/month)</li>
+                </ul>
+                <a href="signup.html?plan=free" class="cta">Get Started</a>
+            </div>
+            <div class="plan-card">
+                <h2>Plus</h2>
+                <div class="price" data-monthly="12" data-yearly="10">12 Pi<span>/month</span></div>
+                <ul>
+                    <li><i class="fas fa-check"></i>Everything in Free</li>
+                    <li><i class="fas fa-check"></i>Unlimited file uploads</li>
+                    <li><i class="fas fa-check"></i>100 guest collaborators</li>
+                    <li><i class="fas fa-check"></i>30-day version history</li>
+                    <li><i class="fas fa-check"></i>Cloudy AI (50 queries/month)</li>
+                </ul>
+                <a href="signup.html?plan=plus" class="cta">Choose Plus</a>
+            </div>
+            <div class="plan-card">
+                <h2>Business</h2>
+                <div class="price" data-monthly="18" data-yearly="15">18 Pi<span>/month</span></div>
+                <ul>
+                    <li><i class="fas fa-check"></i>Everything in Plus</li>
+                    <li><i class="fas fa-check"></i>250 guest collaborators</li>
+                    <li><i class="fas fa-check"></i>SAML SSO</li>
+                    <li><i class="fas fa-check"></i>Bulk exports</li>
+                    <li><i class="fas fa-check"></i>Cloudy AI (100 queries/month)</li>
+                </ul>
+                <a href="signup.html?plan=business" class="cta">Choose Business</a>
+            </div>
+            <div class="plan-card">
+                <h2>Enterprise</h2>
+                <div class="price">Custom Pi</div>
+                <ul>
+                    <li><i class="fas fa-check"></i>Everything in Business</li>
+                    <li><i class="fas fa-check"></i>Unlimited guest collaborators</li>
+                    <li><i class="fas fa-check"></i>Advanced security & SCIM</li>
+                    <li><i class="fas fa-check"></i>Dedicated manager</li>
+                    <li><i class="fas fa-check"></i>Unlimited Cloudy AI</li>
+                </ul>
+                <a href="contact-sales.html" class="cta">Contact Sales</a>
+            </div>
+        </div>
+        <div class="pricing-table">
+            <table>
+                <tr class="plan-header">
+                    <th></th>
+                    <th>Free<br><a href="signup.html?plan=free" class="button">Sign Up</a></th>
+                    <th>Plus<br><span class="price" data-monthly="12" data-yearly="10">12 Pi/month</span><br><a href="signup.html?plan=plus" class="button">Get Started</a></th>
+                    <th>Business<br><span class="price" data-monthly="18" data-yearly="15">18 Pi/month</span><br><a href="signup.html?plan=business" class="button">Get Started</a></th>
+                    <th>Enterprise<br><span class="price">Contact us</span><br><a href="contact-sales.html" class="contact-us">Contact us →</a></th>
+                </tr>
+                <tr><th>Content</th></tr>
+                <tr><td>Pages & Blocks</td><td>Unlimited for individuals</td><td>Unlimited</td><td>Unlimited</td><td>Unlimited</td></tr>
+                <tr><td>File Uploads</td><td>Up to 5 MB</td><td>Unlimited</td><td>Unlimited</td><td>Unlimited</td></tr>
+                <tr><td>Project History</td><td>7 days</td><td>30 days</td><td>90 days</td><td>Unlimited</td></tr>
+                <tr><td>Analytics</td><td>Basic</td><td>Basic</td><td>Advanced</td><td>Advanced</td></tr>
+                <tr><td>Verify Any Project</td><td></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td></tr>
+                <tr><th>Sharing & Collaboration</th></tr>
+                <tr><td>Collaborative Workspace</td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td></tr>
+                <tr><td>Guest Invites</td><td>10</td><td>100</td><td>250</td><td>Starting at 250</td></tr>
+                <tr><td>Permission Groups</td><td></td><td></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td></tr>
+                <tr><td>Teamspaces (Open & Closed)</td><td></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td></tr>
+                <tr><td>Teamspaces (Private)</td><td></td><td></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td></tr>
+                <tr><td>Advanced Teamspace Permissions</td><td></td><td></td><td></td><td><span class="check">✔</span></td></tr>
+            </table>
+        </div>
+        <div class="ai-section">
+            <h2>Cloudy AI - Now with AI Connectors</h2>
+            <p>Add to your workspace for <span class="ai-price" data-monthly="10" data-yearly="8">10 Pi</span> per member/month.</p>
+            <ul>
+                <li>Connect apps like Slack, Google Drive, GitHub (Beta)</li>
+                <li>Limit Cloudy AI's search to your trusted sources</li>
+                <li>Generate and edit content in any project</li>
+                <li>Autofill databases with summaries & insights</li>
+                <li>Chat about anything using GPT-4 & Claude</li>
+            </ul>
+            <a href="signup.html?add-on=ai" class="button">Get Started</a>
+            <p style="margin-top: 16px;"><a href="ai-faq.html" style="color: var(--primary);">Read Cloudy AI FAQ</a></p>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-grid">
+            <div class="faq-card">
+                <h4>What's included in the Free plan?</h4>
+                <p>The Free plan offers unlimited pages and blocks, 5MB file uploads, 10 guest collaborators, and 5 Cloudy AI queries per month—perfect for individuals or small teams.</p>
+            </div>
+            <div class="faq-card">
+                <h4>How does the 20% yearly discount work?</h4>
+                <p>Opt for "Pay Yearly" to save 20% on Plus and Business plans. For example, Plus drops from 12 Pi/month to 10 Pi/month, billed annually as 120 Pi.</p>
+            </div>
+            <div class="faq-card">
+                <h4>What is Pi Payment?</h4>
+                <p>Pi Payments use Pi, a cryptocurrency from the Pi Network, offering fast, secure, and decentralized transactions. Learn more at <a href="pi-payments.html">Pi Payments</a>.</p>
+            </div>
+            <div class="faq-card">
+                <h4>What is Pi, and how do I get it?</h4>
+                <p>Pi is a cryptocurrency you can mine on your phone via the Pi Network app. Download it from the App Store or Google Play, sign up, and start mining to earn Pi for Cloudy plans.</p>
+            </div>
+            <div class="faq-card">
+                <h4>Can I upgrade or downgrade my plan?</h4>
+                <p>Yes, you can switch plans anytime from your Cloudy dashboard. Changes take effect at the start of your next billing cycle.</p>
+            </div>
+            <div class="faq-card">
+                <h4>What happens if I exceed storage limits?</h4>
+                <p>You'll be notified to upgrade your plan or manage your storage. Additional storage can be purchased separately starting at 1 Pi for 10GB.</p>
+            </div>
+            <div class="faq-card">
+                <h4>Is there a free trial for paid plans?</h4>
+                <p>The Free plan is your trial! Upgrade to Creator or Team anytime to access more features—no trial period needed for paid plans.</p>
+            </div>
+            <div class="faq-card">
+                <h4>How does billing work with Pi?</h4>
+                <p>Billing is monthly via Pi Network. Ensure your Pi wallet has enough balance; payments are deducted automatically on your renewal date.</p>
+            </div>
+            <div class="faq-card">
+                <h4>What kind of support is included?</h4>
+                <p>Free plan includes community support. Creator offers priority email, and Team provides 24/7 chat and email support with faster response times.</p>
+            </div>
+            <div class="faq-card">
+                <h4>Can I cancel my subscription?</h4>
+                <p>Yes, cancel anytime from your account settings. You'll retain access until the end of your current billing cycle—no refunds for partial months.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Explore more ☁️</h4>
+                <ul>
+                    <li><a href="explore-more.html">Explore More</a></li>
+                    <li><a href="categories.html">Categories</a></li>
+                    <li><a href="top-creators.html">Top Creators</a></li>
+                    <li><a href="new-releases.html">New Releases</a></li>
+                    <li><a href="discover.html">Discover</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Create</h4>
+                <ul>
+                    <li><a href="workspace-tools.html">Workspace Tools</a></li>
+                    <li><a href="sell.html">Sell Your Work</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="profile.html">Profile</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="our-story.html">Our Story</a></li>
+                    <li><a href="pi-payments.html">Pi Payments</a></li>
+                    <li><a href="team.html">Team</a></li>
+                    <li><a href="whitepaper.html">Whitepaper</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="help-center.html">Help Center</a></li>
+                    <li><a href="contact-us.html">Contact Us</a></li>
+                    <li><a href="email-subscribers.html">Email Subscribers</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-mobile-nav">
+            <ul>
+                <li><a href="home.html"><span class="icon">🏠</span>Home</a></li>
+                <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
+                <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
+                <li><a href="discover.html"><span class="icon">🔍</span>Discover</a></li>
+                <li><a href="profile.html"><span class="icon">👤</span>Profile</a></li>
+            </ul>
+        </div>
+        <div class="footer-subscription">
+            <h4>Subscribe to Our Newsletter ☁️</h4>
+            <form>
+                <input type="email" placeholder="Enter your email" required>
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-left">
+                <span>© 2025 <span class="footer-app-name">Cloudy</span>. All rights reserved.</span>
+                <span>We do not sell or share your personal information.</span>
+                <div class="footer-bottom-links">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="cookie-settings.html">Cookie Settings</a>
+                    <a href="whitepaper.html">Whitepaper</a>
+                    <a href="docs.html">Docs</a>
+                    <a href="security.html">Security</a>
+                    <a href="notice.html">Notices</a>
+                </div>
+            </div>
+            <div class="social-icons">
+                <a href="https://facebook.com/cloudy" target="_blank" aria-label="Follow Cloudy on Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com/cloudy" target="_blank" aria-label="Follow Cloudy on Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://instagram.com/cloudy" target="_blank" aria-label="Follow Cloudy on Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://telegram.org/cloudy" target="_blank" aria-label="Follow Cloudy on Telegram"><i class="fab fa-telegram"></i></a>
+                <a href="https://discord.com/cloudy" target="_blank" aria-label="Join Cloudy on Discord"><i class="fab fa-discord"></i></a>
+            </div>
+            <span class="footer-powered">Powered by Pi Network</span>
+        </div>
+    </footer>
+
+    <div class="test-payment-section" style="text-align: center; padding: 20px; margin: 20px 0; background-color: #f8f9fa; border-radius: 8px;">
+        <h2 style="color: #6366f1; margin-bottom: 15px;">Test Pi Payment</h2>
+        <p style="margin-bottom: 15px;">Try a test payment of 1π</p>
+        <button 
+            onclick="makeTestPayment()" 
+            style="background-color: #8A2BE2; 
+                   color: white; 
+                   padding: 12px 24px; 
+                   border: none; 
+                   border-radius: 6px; 
+                   font-weight: 500; 
+                   cursor: pointer; 
+                   transition: background-color 0.2s ease;">
+            Make Test Payment (1π)
+        </button>
+    </div>
+
+    <script>
+        // Header shadow on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            header.classList.toggle('scrolled', window.scrollY > 0);
+        });
+
+        // Mobile menu toggle with debounce
+        let isToggling = false;
+        const hamburger = document.querySelector('.hamburger');
+        const mobileMenu = document.querySelector('.mobile-menu');
+
+        hamburger.addEventListener('click', () => {
+            if (isToggling) return;
+            isToggling = true;
+            mobileMenu.classList.toggle('open');
+            const isOpen = mobileMenu.classList.contains('open');
+            hamburger.textContent = isOpen ? '✕' : '☰';
+            hamburger.setAttribute('aria-expanded', isOpen);
+            setTimeout(() => { isToggling = false; }, 300);
+        });
+
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                hamburger.textContent = '☰';
+                hamburger.setAttribute('aria-expanded', false);
+            });
+        });
+
+        // Close mobile menu on outside click
+        document.addEventListener('click', (e) => {
+            if (!mobileMenu.contains(e.target) && !hamburger.contains(e.target) && mobileMenu.classList.contains('open')) {
+                mobileMenu.classList.remove('open');
+                hamburger.textContent = '☰';
+                hamburger.setAttribute('aria-expanded', false);
+            }
+        });
+
+        // Scroll reveal animations
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    obs.unobserve(entry.target); // Stop observing once visible
+                }
+            });
+        }, { threshold: 0.05, rootMargin: '20px' });
+
+        document.querySelectorAll('.container h1, .plan-card, .pricing-table table, .ai-section, .faq-section h2, .faq-card, .footer-section').forEach(el => observer.observe(el));
+
+        // Highlight active nav link
+        const currentPage = window.location.pathname.split('/').pop() || 'home.html';
+        document.querySelectorAll('header nav a, .footer-mobile-nav a').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
+        });
+
+        // Mobile nav active state
+        document.querySelectorAll('.footer-mobile-nav a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.querySelectorAll('.footer-mobile-nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+
+        // Billing toggle functionality
+        function updatePricing(period) {
+            const prices = document.querySelectorAll('.plan-card .price, .pricing-table .price, .ai-section .ai-price');
+            prices.forEach(price => {
+                const monthly = price.dataset.monthly;
+                const yearly = price.dataset.yearly;
+                if (monthly && yearly) {
+                    if (period === 'yearly') {
+                        price.innerHTML = `${yearly} Pi<span>/month</span>`;
+                    } else {
+                        price.innerHTML = `${monthly} Pi<span>/month</span>`;
+                    }
+                }
+            });
+        }
+
+        // Initialize pricing based on default selection
+        document.addEventListener('DOMContentLoaded', () => {
+            updatePricing('monthly');
+        });
+
+        // Basic form validation for subscription
+        const form = document.querySelector('.footer-subscription form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = form.querySelector('input[type="email"]').value;
+            if (/^\S+@\S+\.\S+$/.test(email)) {
+                alert('Thank you for subscribing!');
+                form.reset();
+            } else {
+                alert('Please enter a valid email address.');
+            }
+        });
+
+        // Handle Pi Network Payment
+        async function handlePayment(planId) {
+            const button = document.getElementById(`pi-payment-${planId}`);
+            const errorDiv = document.getElementById(`payment-error-${planId}`);
+            const successDiv = document.getElementById(`payment-success-${planId}`);
+            const price = planPrices[planId];
+
+            try {
+                // Show loading state
+                button.classList.add('loading');
+                button.disabled = true;
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+
+                // Create payment
+                const payment = await pi.createPayment({
+                    amount: price,
+                    memo: `Cloudy ${planId.charAt(0).toUpperCase() + planId.slice(1)} Plan Subscription`,
+                    metadata: {
+                        planId: planId,
+                        userId: localStorage.getItem('userId')
+                    }
+                });
+
+                // Show success message
+                successDiv.textContent = `Payment successful! Welcome to the ${planId} plan!`;
+                successDiv.style.display = 'block';
+
+                // Update user's plan in backend
+                await fetch('/api/subscriptions/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        planId: planId,
+                        paymentId: payment.identifier
+                    })
+                });
+
+                // Redirect to dashboard after a short delay
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error('Payment failed:', error);
+                errorDiv.textContent = error.message || 'Payment failed. Please try again.';
+                errorDiv.style.display = 'block';
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        // Update price displays with Pi icon
+        document.querySelectorAll('.plan-price').forEach(priceElement => {
+            const planId = priceElement.closest('.pricing-card').dataset.plan;
+            const price = planPrices[planId];
+            priceElement.innerHTML = `
+                <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi" class="pi-icon">
+                <span>${price} Pi</span>
+                <span class="period">/month</span>
+            `;
+        });
+
+        // Add payment buttons to each plan
+        document.querySelectorAll('.pricing-card').forEach(card => {
+            const planId = card.dataset.plan;
+            const buttonContainer = document.createElement('div');
+            buttonContainer.innerHTML = `
+                <button id="pi-payment-${planId}" class="pi-payment-button" onclick="handlePayment('${planId}')">
+                    <img src="https://sdk.minepi.com/pi-logo.png" alt="Pi Network Logo">
+                    <span>Subscribe with Pi</span>
+                    <div class="loading"></div>
+                </button>
+                <div id="payment-error-${planId}" class="payment-error"></div>
+                <div id="payment-success-${planId}" class="payment-success"></div>
+            `;
+            card.querySelector('.pricing-features').after(buttonContainer);
+        });
+
+        // Check if user is authenticated
+        window.addEventListener('load', () => {
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                window.location.href = '/sign.html';
+            }
+        });
+    </script>
+</body>
+</html>
